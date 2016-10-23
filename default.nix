@@ -4,7 +4,7 @@ stdenv.mkDerivation {
   name = "vedve-0.0.1";
   src = ./.;
 
-  buildInputs = [ ];
+  buildInputs = [ libevdev ];
 
   meta =  {
     description = "Keyboard remapper via evdev/uinput";

@@ -24,6 +24,7 @@ int create_input_dev() {
   checked_ioctl(fd, UI_SET_EVBIT, EV_SYN);
 
   checked_ioctl(fd, UI_SET_KEYBIT, KEY_D);
+  checked_ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
 
   struct uinput_user_dev uidev;
   memset(&uidev, 0, sizeof(uidev));
@@ -53,15 +54,7 @@ void send_event(int dev, int type, int code, int value) {
   checked_write(dev, ev);
 }
 
-void send_key(int dev, int code) {
-  char buf[100];
-
-  send_event(dev, EV_KEY, KEY_D, 1);
+void send_key(int dev, int code, int state) {
+  send_event(dev, EV_KEY, code, state);
   send_event(dev, EV_SYN, SYN_REPORT, 0);
-  printf("keydown sent\n");
-  if(fgets(buf, sizeof(buf) - 1, stdin) == NULL)
-    printf("fgets failed\n");
-  send_event(dev, EV_KEY, KEY_D, 0);
-  send_event(dev, EV_SYN, SYN_REPORT, 0);
-  printf("keyup sent\n");
 }
