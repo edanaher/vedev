@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <libevdev-1.0/libevdev/libevdev.h>
 #include <linux/input.h>
 #include <linux/uinput.h>
 
@@ -12,7 +13,7 @@
 #define checked_write(fd, buffer) if(write(fd, &buffer, sizeof(buffer)) != sizeof(buffer)) \
   printf("Error writing " # buffer), exit(1)
 
-int create_input_dev() {
+int clone_input_dev(struct libevdev *capture) {
   int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
   if(fd < 0) {
     printf("Unable to open /dev/uinput\n");
@@ -23,8 +24,12 @@ int create_input_dev() {
   checked_ioctl(fd, UI_SET_EVBIT, EV_REL);
   checked_ioctl(fd, UI_SET_EVBIT, EV_SYN);
 
-  checked_ioctl(fd, UI_SET_KEYBIT, KEY_D);
+  int k;
+  for(k = 0; k < KEY_CNT; k++)
+    if(libevdev_has_event_code(capture, EV_KEY, k))
+      checked_ioctl(fd, UI_SET_KEYBIT, k);
   checked_ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
+
   checked_ioctl(fd, UI_SET_RELBIT, REL_X);
   checked_ioctl(fd, UI_SET_RELBIT, REL_Y);
 

@@ -5,7 +5,7 @@
 #include <linux/input.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
 
-int create_input_dev();
+int clone_input_dev(struct libevdev *capture);
 void send_key(int dev, int k, int state);
 void send_event(int dev, int k, int code, int state);
 void destroy_input_dev(int dev);
@@ -17,15 +17,17 @@ int process_event(int dev, struct input_event *ev) {
   //printf("%d %d %d %d\n", ev->type, EV_KEY, ev->code, KEY_Q);
   if(ev->type == EV_KEY && ev->code == KEY_Q)
     return 1;
-  if(ev->type == EV_KEY && ev->code == KEY_F8 && ev->value != 2) {
-    printf("Mouse?\n");
-    send_key(dev, BTN_LEFT, ev->value);
-  }
-  if(ev->type == EV_KEY && ev->code == KEY_F9 && ev->value > 0) {
-    printf("Mouse rel?\n");
+  else if(ev->type == EV_KEY && ev->code == KEY_F8) {
+    if(ev->value != 2)
+      send_key(dev, BTN_LEFT, ev->value);
+  } else if(ev->type == EV_KEY && ev->code == KEY_F9 && ev->value > 0) {
     send_event(dev, EV_REL, REL_X, 5);
     send_event(dev, EV_REL, REL_Y, 5);
     send_event(dev, EV_SYN, SYN_REPORT, 0);
+  } else if(ev->type == EV_KEY && ev->code == KEY_RIGHTCTRL) {
+    send_event(dev, ev->type, KEY_RIGHTSHIFT, ev->value);
+  } else {
+    send_event(dev, ev->type, ev->code, ev->value);
   }
 
   return 0;
@@ -33,8 +35,8 @@ int process_event(int dev, struct input_event *ev) {
 
 int main() {
   usleep(100000);
-  int dev = create_input_dev();
   struct libevdev *capture = open_capture_dev();
+  int dev = clone_input_dev(capture);
   struct input_event ev;
   while(1) {
     int rc = get_event(capture, &ev);

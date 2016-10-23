@@ -14,7 +14,7 @@ struct libevdev *open_capture_dev() {
     exit(1);
   }
 
-  //libevdev_grab(dev, LIBEVDEV_GRAB);
+  libevdev_grab(dev, LIBEVDEV_GRAB);
 
   return dev;
 }
