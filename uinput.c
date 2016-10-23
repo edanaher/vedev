@@ -25,6 +25,8 @@ int create_input_dev() {
 
   checked_ioctl(fd, UI_SET_KEYBIT, KEY_D);
   checked_ioctl(fd, UI_SET_KEYBIT, BTN_LEFT);
+  checked_ioctl(fd, UI_SET_RELBIT, REL_X);
+  checked_ioctl(fd, UI_SET_RELBIT, REL_Y);
 
   struct uinput_user_dev uidev;
   memset(&uidev, 0, sizeof(uidev));
