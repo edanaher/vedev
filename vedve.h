@@ -1,0 +1,3 @@
+struct config {
+  char *name;
+};

@@ -5,6 +5,8 @@
 #include <linux/input.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
 
+#include "vedve.h"
+
 int clone_input_dev(struct libevdev *capture);
 void send_key(int dev, int k, int state);
 void send_event(int dev, int k, int code, int state);
@@ -12,6 +14,8 @@ void destroy_input_dev(int dev);
 
 struct libevdev *open_capture_dev();
 int get_event(struct libevdev *dev, struct input_event *ev);
+
+void load_config(char *filename, struct config *config);
 
 int state = 0;
 
@@ -144,6 +148,9 @@ int process_event(int dev, struct input_event *ev) {
 }
 
 int main() {
+  struct config config;
+  load_config("vedve.conf", &config);
+  printf("name is %s\n", config.name);
   usleep(100000);
   struct libevdev *capture = open_capture_dev();
   int dev = clone_input_dev(capture);
