@@ -17,7 +17,7 @@ int state = 0;
 
 #define NCHORDS 5
 int chords[NCHORDS][10] = {
-  { KEY_LEFTCTRL, KEY_RIGHTCTRL, KEY_LEFTALT, KEY_RIGHTALT, -1 },
+  { KEY_RIGHTCTRL, KEY_LEFTCTRL, KEY_LEFTALT, KEY_RIGHTALT, -1 },
   { KEY_D, KEY_F, KEY_J, -1},
   { KEY_D, KEY_F, KEY_K, -1},
   { KEY_D, KEY_F, KEY_H, -1},
@@ -134,8 +134,8 @@ int process_event(int dev, struct input_event *ev) {
     send_event(dev, EV_REL, REL_X, 5);
     send_event(dev, EV_REL, REL_Y, 5);
     send_event(dev, EV_SYN, SYN_REPORT, 0);
-  } else if(ev->type == EV_KEY && ev->code == KEY_RIGHTCTRL) {
-    send_event(dev, ev->type, KEY_RIGHTSHIFT, ev->value);
+  /*} else if(ev->type == EV_KEY && ev->code == KEY_RIGHTCTRL) {
+    send_event(dev, ev->type, KEY_RIGHTSHIFT, ev->value);*/
   } else {
     send_event(dev, ev->type, ev->code, ev->value);
   }
