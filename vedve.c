@@ -15,10 +15,13 @@ int get_event(struct libevdev *dev, struct input_event *ev);
 
 int state = 0;
 
-int chords[3][10] = {
+#define NCHORDS 5
+int chords[NCHORDS][10] = {
   { KEY_LEFTCTRL, KEY_RIGHTCTRL, KEY_LEFTALT, KEY_RIGHTALT, -1 },
-  { KEY_S, KEY_D, KEY_J, -1},
-  { KEY_S, KEY_D, KEY_K, -1}
+  { KEY_D, KEY_F, KEY_J, -1},
+  { KEY_D, KEY_F, KEY_K, -1},
+  { KEY_D, KEY_F, KEY_H, -1},
+  { KEY_D, KEY_F, KEY_L, -1}
 };
 
 int chordInProgress = -1;
@@ -66,7 +69,7 @@ int process_chords(int dev, struct input_event *ev) {
       return -2;
     } else { // Search for another matching chord
       int ch, k;
-      for(ch = 0; ch < 3; ch++) {
+      for(ch = 0; ch < NCHORDS; ch++) {
         for(k = 0; k < chordLenInProgress; k++)
           if(chords[ch][k] != chords[chordInProgress][k])
             break;
@@ -88,7 +91,7 @@ int process_chords(int dev, struct input_event *ev) {
   }
   // No chord in progress, key pressed.  Check if it starts.
   int ch;
-  for(ch = 0; ch < 3; ch++)
+  for(ch = 0; ch < NCHORDS; ch++)
     if(chords[ch][0] == ev->code) {
       chordInProgress = ch;
       chordLenInProgress = 1;
@@ -111,14 +114,22 @@ int process_event(int dev, struct input_event *ev) {
       send_key(dev, KEY_UP, 1);
       send_key(dev, KEY_UP, 0);
     }
+    if(ch == 3) {
+      send_key(dev, KEY_LEFT, 1);
+      send_key(dev, KEY_LEFT, 0);
+    }
+    if(ch == 4) {
+      send_key(dev, KEY_RIGHT, 1);
+      send_key(dev, KEY_RIGHT, 0);
+    }
     if(ch != -1)
       return 0;
   }
   if(ev->type == EV_KEY && ev->code == KEY_F8) {
     if(ev->value != 2)
       send_key(dev, BTN_LEFT, ev->value);
-  } else if(ev->type == EV_KEY && ev->code == KEY_Q) {
-    return 1;
+  /*} else if(ev->type == EV_KEY && ev->code == KEY_Q) {
+    return 1;*/
   } else if(ev->type == EV_KEY && ev->code == KEY_F9 && ev->value > 0) {
     send_event(dev, EV_REL, REL_X, 5);
     send_event(dev, EV_REL, REL_Y, 5);
