@@ -4,7 +4,7 @@
 
 #include "vedve.h"
 
-void load_config(char *filename, struct config *config) {
+lua_State *load_config(char *filename, struct config *config) {
   lua_State *L = luaL_newstate();
   luaopen_base(L);
   luaopen_io(L);
@@ -22,5 +22,19 @@ void load_config(char *filename, struct config *config) {
     lua_error(L);
   }
   config->name = (char *)lua_tostring(L, -1);
-  lua_close(L);
+
+  lua_getglobal(L, "f");
+  if(!lua_isfunction(L, -1)) {
+    printf("Lua: `f' should be a function");
+  } else {
+    if(lua_pcall(L, 0, 1, 0)) {
+      const char *err = lua_tostring(L, -1);
+      printf("Error calling f: %s\n", err);
+    } else {
+      const char *res = lua_tostring(L, -1);
+      printf("Got result: %s\n", res);
+    }
+  }
+
+  return L;
 }
