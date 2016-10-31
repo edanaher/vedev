@@ -16,7 +16,7 @@ struct libevdev *open_capture_dev();
 int get_event(struct libevdev *dev, struct input_event *ev);
 
 void load_config(char *filename, struct config *config);
-char *get_key_config(struct config *config, struct input_event *ev);
+int get_key_config(struct config *config, struct input_event *ev);
 
 int state = 0;
 
@@ -108,10 +108,10 @@ int process_chords(int dev, struct input_event *ev) {
 int process_event(struct config *config, int dev, struct input_event *ev) {
   //printf("%d %d %d %d\n", ev->type, EV_KEY, ev->code, KEY_Q);
   if(ev->type == EV_KEY) {
-    char *lua_action = get_key_config(config, ev);
-    if(lua_action) {
-      printf("Got lua action %s\n", lua_action);
-      return 0;
+    int lua_action = get_key_config(config, ev);
+    if(lua_action != -1) {
+      printf("Got lua action %d\n", lua_action);
+      ev->code = lua_action;
     }
     int ch = process_chords(dev, ev);
     if(ch == 0)

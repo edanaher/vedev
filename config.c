@@ -14,7 +14,9 @@ lua_State *load_config(char *filename, struct config *config) {
   luaopen_math(L);
 
   if(luaL_loadfile(L, filename) || lua_pcall(L, 0, 0, 0)) {
-    lua_pushstring(L, "can't load configuration file: %s");
+    char buffer[1000];
+    snprintf(buffer, 999, "can't load configuration file:\n%s", lua_tostring(L, -1));
+    lua_pushstring(L, buffer);
     lua_error(L);
   }
 
@@ -42,7 +44,7 @@ lua_State *load_config(char *filename, struct config *config) {
   return L;
 }
 
-char *get_key_config(struct config *config, struct input_event *ev) {
+int get_key_config(struct config *config, struct input_event *ev) {
   lua_State *L = config->L;
   lua_getglobal(L, "keys");
   if(!lua_istable(L, -1)) {
@@ -53,13 +55,22 @@ char *get_key_config(struct config *config, struct input_event *ev) {
   lua_gettable(L, -2);
   if(lua_isnil(L, -1)) {
     lua_pop(L, 2);
-    return NULL;
+    return -1;
   }
-  if(lua_isstring(L, -1)) {
+  /*if(lua_isstring(L, -1)) {
     char *str = (char *)lua_tostring(L, -1);
     lua_pop(L, 2);
     return str;
+  }*/
+  if(lua_isfunction(L, -1)) {
+    lua_newtable(L);
+    lua_pushvalue(L, ev->code);
+    lua_setfield(L, -2, "code");
+    lua_call(L, 1, 1);
+    int k = lua_tointeger(L, -1);
+    lua_pop(L, 2);
+    return k;
   }
-  printf("Error: Key config must be a string\n");
-  return NULL;
+  printf("Error: Key config must be a function\n");
+  return -1;
 }
