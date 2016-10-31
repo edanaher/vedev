@@ -2,6 +2,8 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <linux/input.h>
+
 #include "vedve.h"
 
 lua_State *load_config(char *filename, struct config *config) {
@@ -35,6 +37,29 @@ lua_State *load_config(char *filename, struct config *config) {
       printf("Got result: %s\n", res);
     }
   }
+  config->L = L;
 
   return L;
+}
+
+char *get_key_config(struct config *config, struct input_event *ev) {
+  lua_State *L = config->L;
+  lua_getglobal(L, "keys");
+  if(!lua_istable(L, -1)) {
+    lua_pushstring(L, "`keys' should be a table");
+    lua_error(L);
+  }
+  lua_pushnumber(L, ev->code);
+  lua_gettable(L, -2);
+  if(lua_isnil(L, -1)) {
+    lua_pop(L, 2);
+    return NULL;
+  }
+  if(lua_isstring(L, -1)) {
+    char *str = (char *)lua_tostring(L, -1);
+    lua_pop(L, 2);
+    return str;
+  }
+  printf("Error: Key config must be a string\n");
+  return NULL;
 }
