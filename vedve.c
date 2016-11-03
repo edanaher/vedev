@@ -17,6 +17,8 @@ int get_event(struct libevdev *dev, struct input_event *ev);
 
 void load_config(char *filename, struct config *config, int dev);
 int get_key_config(struct config *config, struct input_event *ev);
+long long time_to_next_callback();
+void run_callbacks(lua_State *L);
 
 int state = 0;
 
@@ -171,6 +173,9 @@ int main() {
                                   libevdev_event_code_get_name(ev.code, ev.value), ev.code, ev.value);*/
       if(process_event(&config, dev, &ev) == 1)
         break;
+    }
+    if(time_to_next_callback() < 0) {
+      run_callbacks(config.L);
     }
   }
 

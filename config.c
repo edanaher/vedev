@@ -2,11 +2,66 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <sys/time.h>
 #include <linux/input.h>
 
 #include "vedve.h"
 
 void send_key(int dev, int k, int state);
+
+struct callback {
+  long long time;
+  int function_ref;
+};
+
+struct callback callbacks[1000];
+
+long long now() {
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return (long long)tv.tv_sec * 1000000 + tv.tv_usec;
+}
+
+int lua_schedule(lua_State *L) {
+  double offset = lua_tonumber(L, 1);
+  int function_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  printf("1\n");
+  printf("Function ref is %d\n", function_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, function_ref);
+  printf("2\n");
+  lua_pop(L, 1);
+  printf("%g: %d\n", offset, function_ref);
+  int i;
+  long long time = now() + 1000 * offset;
+  for(i = 0; callbacks[i].time; i++);
+  for(; i >= 0 && (!callbacks[i].time || callbacks[i].time > time); i--) {
+    callbacks[i + 1].time = callbacks[i].time;
+    callbacks[i + 1].function_ref = callbacks[i].function_ref;
+  }
+  callbacks[i + 1].time = time;
+  callbacks[i + 1].function_ref = function_ref;
+  return 0;
+}
+
+long long time_to_next_callback() {
+  return callbacks[0].time ? callbacks[0].time - now() : 0;
+}
+
+void run_callbacks(lua_State *L) {
+  int c;
+  long long time = now();
+  for(c = 0; callbacks[c].time && callbacks[c].time < time; c++) {
+    printf("Function ref is %d\n", callbacks[c].function_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
+    lua_call(L, 0, 0);
+    luaL_unref(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
+  }
+  if(c)
+    for(int i = c; callbacks[i - 1].time; i++) {
+      callbacks[i - c].time = callbacks[i].time;
+      callbacks[i - c].function_ref = callbacks[i].function_ref;
+    }
+}
 
 int lua_sendevent(lua_State *L) {
   int dev = lua_tointeger(L, lua_upvalueindex(1));
@@ -19,9 +74,12 @@ int lua_sendevent(lua_State *L) {
 }
 
 void setup_environment(lua_State *L, int dev) {
+  callbacks[0].time = 0;
   lua_pushinteger(L, dev);
   lua_pushcclosure(L, lua_sendevent, 1);
   lua_setglobal(L, "send_event");
+  lua_pushcfunction(L, lua_schedule);
+  lua_setglobal(L, "schedule");
 }
 
 lua_State *load_config(char *filename, struct config *config, int dev) {
