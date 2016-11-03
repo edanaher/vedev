@@ -6,12 +6,32 @@
 
 #include "vedve.h"
 
-lua_State *load_config(char *filename, struct config *config) {
+void send_key(int dev, int k, int state);
+
+int lua_sendevent(lua_State *L) {
+  int dev = lua_tointeger(L, lua_upvalueindex(1));
+  struct input_event ev;
+  ev.type = lua_tointeger(L, 1);
+  ev.code = lua_tointeger(L, 2);
+  ev.value = lua_tointeger(L, 3);
+  send_key(dev, ev.code, ev.value);
+  return 0;
+}
+
+void setup_environment(lua_State *L, int dev) {
+  lua_pushinteger(L, dev);
+  lua_pushcclosure(L, lua_sendevent, 1);
+  lua_setglobal(L, "send_event");
+}
+
+lua_State *load_config(char *filename, struct config *config, int dev) {
   lua_State *L = luaL_newstate();
   luaopen_base(L);
   luaopen_io(L);
   luaopen_string(L);
   luaopen_math(L);
+
+  setup_environment(L, dev);
 
   if(luaL_loadfile(L, filename) || lua_pcall(L, 0, 0, 0)) {
     char buffer[1000];
@@ -64,8 +84,12 @@ int get_key_config(struct config *config, struct input_event *ev) {
   }*/
   if(lua_isfunction(L, -1)) {
     lua_newtable(L);
-    lua_pushvalue(L, ev->code);
+    lua_pushinteger(L, ev->code);
     lua_setfield(L, -2, "code");
+    lua_pushinteger(L, ev->type);
+    lua_setfield(L, -2, "type");
+    lua_pushinteger(L, ev->value);
+    lua_setfield(L, -2, "value");
     lua_call(L, 1, 1);
     int k = lua_tointeger(L, -1);
     lua_pop(L, 2);

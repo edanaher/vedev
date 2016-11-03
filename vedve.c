@@ -15,7 +15,7 @@ void destroy_input_dev(int dev);
 struct libevdev *open_capture_dev();
 int get_event(struct libevdev *dev, struct input_event *ev);
 
-void load_config(char *filename, struct config *config);
+void load_config(char *filename, struct config *config, int dev);
 int get_key_config(struct config *config, struct input_event *ev);
 
 int state = 0;
@@ -109,6 +109,8 @@ int process_event(struct config *config, int dev, struct input_event *ev) {
   //printf("%d %d %d %d\n", ev->type, EV_KEY, ev->code, KEY_Q);
   if(ev->type == EV_KEY) {
     int lua_action = get_key_config(config, ev);
+    if(lua_action == -2)
+      return 0;
     if(lua_action != -1) {
       printf("Got lua action %d\n", lua_action);
       ev->code = lua_action;
@@ -155,11 +157,11 @@ int process_event(struct config *config, int dev, struct input_event *ev) {
 
 int main() {
   struct config config;
-  load_config("vedve.conf", &config);
-  printf("name is %s\n", config.name);
   usleep(100000);
   struct libevdev *capture = open_capture_dev();
   int dev = clone_input_dev(capture);
+  load_config("vedve.conf", &config, dev);
+  printf("name is %s\n", config.name);
   struct input_event ev;
   while(1) {
     int rc = get_event(capture, &ev);
