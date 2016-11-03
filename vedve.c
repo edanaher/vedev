@@ -168,10 +168,10 @@ int main() {
   struct input_event ev;
   while(1) {
     int rc = get_event(capture, capture_fd, time_to_next_callback(), &ev);
-    //printf("status: %d\n", rc);
     if(rc == 0) {
-      /*printf("Event: %s %s %d %d\n", libevdev_event_type_get_name(ev.type),
-                                  libevdev_event_code_get_name(ev.code, ev.value), ev.code, ev.value);*/
+      /*if(ev.type == EV_KEY)
+        printf("Event: %s %s %d %d\n", libevdev_event_type_get_name(ev.type),
+                                    libevdev_event_code_get_name(ev.code, ev.value), ev.code, ev.value);*/
       if(process_event(&config, dev, &ev) == 1)
         break;
     }

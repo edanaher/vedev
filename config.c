@@ -45,7 +45,6 @@ void run_callbacks(lua_State *L) {
   int c;
   long long time = now();
   for(c = 0; callbacks[c].time && callbacks[c].time < time; c++) {
-    printf("Function ref is %d\n", callbacks[c].function_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
     lua_call(L, 0, 0);
     luaL_unref(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
