@@ -8,8 +8,8 @@
 
 struct libevdev *open_capture_dev(int *fd) {
   *fd = open("/dev/input/event0", O_RDONLY);
-  int flags = fcntl(*fd, F_GETFL, 0);
-  fcntl(*fd, F_SETFL, flags | O_NONBLOCK);
+  /*int flags = fcntl(*fd, F_GETFL, 0);
+  fcntl(*fd, F_SETFL, flags | O_NONBLOCK);*/
   struct libevdev *dev;
 
   if(libevdev_new_from_fd(*fd, &dev) < 0) {
@@ -25,7 +25,7 @@ struct libevdev *open_capture_dev(int *fd) {
 int get_event(struct libevdev *dev, int capture_fd, long long timeout, struct input_event *ev) {
   // No events queued; just block until an event shows up.
   if(!timeout || libevdev_has_event_pending(dev))
-    return libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, ev);
+    return libevdev_next_event(dev, LIBEVDEV_READ_FLAG_BLOCKING, ev);
 
   fd_set fds;
   FD_ZERO(&fds);
