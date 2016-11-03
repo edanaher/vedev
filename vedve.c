@@ -12,8 +12,8 @@ void send_key(int dev, int k, int state);
 void send_event(int dev, int k, int code, int state);
 void destroy_input_dev(int dev);
 
-struct libevdev *open_capture_dev();
-int get_event(struct libevdev *dev, struct input_event *ev);
+struct libevdev *open_capture_dev(int *fd);
+int get_event(struct libevdev *dev, int capture_fd, long long timeout, struct input_event *ev);
 
 void load_config(char *filename, struct config *config, int dev);
 int get_key_config(struct config *config, struct input_event *ev);
@@ -160,13 +160,14 @@ int process_event(struct config *config, int dev, struct input_event *ev) {
 int main() {
   struct config config;
   usleep(100000);
-  struct libevdev *capture = open_capture_dev();
+  int capture_fd;
+  struct libevdev *capture = open_capture_dev(&capture_fd);
   int dev = clone_input_dev(capture);
   load_config("vedve.conf", &config, dev);
   printf("name is %s\n", config.name);
   struct input_event ev;
   while(1) {
-    int rc = get_event(capture, &ev);
+    int rc = get_event(capture, capture_fd, time_to_next_callback(), &ev);
     //printf("status: %d\n", rc);
     if(rc == 0) {
       /*printf("Event: %s %s %d %d\n", libevdev_event_type_get_name(ev.type),

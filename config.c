@@ -25,12 +25,6 @@ long long now() {
 int lua_schedule(lua_State *L) {
   double offset = lua_tonumber(L, 1);
   int function_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  printf("1\n");
-  printf("Function ref is %d\n", function_ref);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, function_ref);
-  printf("2\n");
-  lua_pop(L, 1);
-  printf("%g: %d\n", offset, function_ref);
   int i;
   long long time = now() + 1000 * offset;
   for(i = 0; callbacks[i].time; i++);

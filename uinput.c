@@ -62,6 +62,7 @@ void send_event(int dev, int type, int code, int value) {
 }
 
 void send_key(int dev, int code, int state) {
+  //printf("Sending key %d %d\n", code, state);
   send_event(dev, EV_KEY, code, state);
   send_event(dev, EV_SYN, SYN_REPORT, 0);
 }
