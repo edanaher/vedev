@@ -113,10 +113,8 @@ int process_event(struct config *config, int dev, struct input_event *ev) {
     int lua_action = get_key_config(config, ev);
     if(lua_action == -2)
       return 0;
-    if(lua_action != -1) {
-      printf("Got lua action %d\n", lua_action);
+    if(lua_action != -1)
       ev->code = lua_action;
-    }
     int ch = process_chords(dev, ev);
     if(ch == 0)
       return 1;

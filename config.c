@@ -66,6 +66,12 @@ int lua_sendevent(lua_State *L) {
   return 0;
 }
 
+int keymapping[][2] = {
+  { KEY_W, 'w'},
+  { KEY_E, 'e'},
+  { KEY_J, 'j'}
+};
+
 void setup_environment(lua_State *L, int dev) {
   callbacks[0].time = 0;
   lua_pushinteger(L, dev);
@@ -73,6 +79,14 @@ void setup_environment(lua_State *L, int dev) {
   lua_setglobal(L, "send_event");
   lua_pushcfunction(L, lua_schedule);
   lua_setglobal(L, "schedule");
+  lua_newtable(L);
+  char buffer[2] = {0, 0};
+  for(int i = 0; i < sizeof(keymapping) / sizeof(keymapping[0]); i++) {
+    lua_pushinteger(L, keymapping[i][0]);
+    buffer[0] = keymapping[i][1];
+    lua_setfield(L, -2, buffer);
+  }
+  lua_setglobal(L, "keys");
 }
 
 lua_State *load_config(char *filename, struct config *config, int dev) {
