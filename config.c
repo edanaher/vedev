@@ -66,10 +66,12 @@ int lua_sendevent(lua_State *L) {
   return 0;
 }
 
-int keymapping[][2] = {
-  { KEY_W, 'w'},
-  { KEY_E, 'e'},
-  { KEY_J, 'j'}
+struct { int k; char *sym; } keymapping[] =  {
+  { KEY_W, "W"},
+  { KEY_E, "E"},
+  { KEY_J, "J"},
+  { KEY_F6, "F6"},
+  { KEY_F7, "F7"}
 };
 
 void setup_environment(lua_State *L, int dev) {
@@ -80,11 +82,9 @@ void setup_environment(lua_State *L, int dev) {
   lua_pushcfunction(L, lua_schedule);
   lua_setglobal(L, "schedule");
   lua_newtable(L);
-  char buffer[2] = {0, 0};
   for(int i = 0; i < sizeof(keymapping) / sizeof(keymapping[0]); i++) {
-    lua_pushinteger(L, keymapping[i][0]);
-    buffer[0] = keymapping[i][1];
-    lua_setfield(L, -2, buffer);
+    lua_pushinteger(L, keymapping[i].k);
+    lua_setfield(L, -2, keymapping[i].sym);
   }
   lua_setglobal(L, "keys");
 }
