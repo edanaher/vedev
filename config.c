@@ -46,7 +46,10 @@ void run_callbacks(lua_State *L) {
   long long time = now();
   for(c = 0; callbacks[c].time && callbacks[c].time < time; c++) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
-    lua_call(L, 0, 0);
+    if(lua_pcall(L, 0, 0, 0)) {
+      luaL_error(L, "Error in callback: %s", lua_tostring(L, -1));
+      // longjmp away!
+    }
     luaL_unref(L, LUA_REGISTRYINDEX, callbacks[c].function_ref);
   }
   if(c)
@@ -99,10 +102,8 @@ lua_State *load_config(char *filename, struct config *config, int dev) {
   setup_environment(L, dev);
 
   if(luaL_loadfile(L, filename) || lua_pcall(L, 0, 0, 0)) {
-    char buffer[1000];
-    snprintf(buffer, 999, "can't load configuration file:\n%s", lua_tostring(L, -1));
-    lua_pushstring(L, buffer);
-    lua_error(L);
+    luaL_error(L, "can't load configuration file:\n%s", lua_tostring(L, -1));
+    // longjmp away
   }
 
   lua_getglobal(L, "name");
@@ -112,18 +113,6 @@ lua_State *load_config(char *filename, struct config *config, int dev) {
   }
   config->name = (char *)lua_tostring(L, -1);
 
-  lua_getglobal(L, "f");
-  if(!lua_isfunction(L, -1)) {
-    printf("Lua: `f' should be a function");
-  } else {
-    if(lua_pcall(L, 0, 1, 0)) {
-      const char *err = lua_tostring(L, -1);
-      printf("Error calling f: %s\n", err);
-    } else {
-      const char *res = lua_tostring(L, -1);
-      printf("Got result: %s\n", res);
-    }
-  }
   config->L = L;
 
   return L;
@@ -131,9 +120,9 @@ lua_State *load_config(char *filename, struct config *config, int dev) {
 
 int get_key_config(struct config *config, struct input_event *ev) {
   lua_State *L = config->L;
-  lua_getglobal(L, "keys");
+  lua_getglobal(L, "keymap");
   if(!lua_istable(L, -1)) {
-    lua_pushstring(L, "`keys' should be a table");
+    lua_pushstring(L, "`keymap' should be a table");
     lua_error(L);
   }
   lua_pushnumber(L, ev->code);
