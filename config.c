@@ -118,6 +118,10 @@ lua_State *load_config(char *filename, struct config *config, int dev) {
   return L;
 }
 
+double time_to_float(struct timeval *tv) {
+  return tv->tv_sec + (double)tv->tv_usec / 1000000;
+}
+
 int get_key_config(struct config *config, struct input_event *ev) {
   lua_State *L = config->L;
   lua_getglobal(L, "keymap");
@@ -144,6 +148,8 @@ int get_key_config(struct config *config, struct input_event *ev) {
     lua_setfield(L, -2, "type");
     lua_pushinteger(L, ev->value);
     lua_setfield(L, -2, "value");
+    lua_pushnumber(L, time_to_float(&ev->time));
+    lua_setfield(L, -2, "time");
     lua_call(L, 1, 1);
     int k = lua_tointeger(L, -1);
     lua_pop(L, 2);
