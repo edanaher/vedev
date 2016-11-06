@@ -22,13 +22,9 @@ void run_callbacks(lua_State *L);
 
 int state = 0;
 
-#define NCHORDS 5
+#define NCHORDS 1
 int chords[NCHORDS][10] = {
   { KEY_RIGHTCTRL, KEY_LEFTCTRL, KEY_LEFTALT, KEY_RIGHTALT, -1 },
-  { KEY_D, KEY_F, KEY_J, -1},
-  { KEY_D, KEY_F, KEY_K, -1},
-  { KEY_D, KEY_F, KEY_H, -1},
-  { KEY_D, KEY_F, KEY_L, -1}
 };
 
 int chordInProgress = -1;

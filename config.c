@@ -72,9 +72,20 @@ int lua_sendevent(lua_State *L) {
 struct { int k; char *sym; } keymapping[] =  {
   { KEY_W, "W"},
   { KEY_E, "E"},
+  { KEY_U, "U"},
+  { KEY_I, "I"},
+  { KEY_D, "D"},
+  { KEY_F, "F"},
+  { KEY_H, "H"},
   { KEY_J, "J"},
+  { KEY_K, "K"},
+  { KEY_L, "L"},
   { KEY_UP, "UP"},
   { KEY_DOWN, "DOWN"},
+  { KEY_LEFT, "LEFT"},
+  { KEY_RIGHT, "RIGHT"},
+  { KEY_PAGEUP, "PAGEUP"},
+  { KEY_PAGEDOWN, "PAGEDOWN"},
   { KEY_F6, "F6"},
   { KEY_F7, "F7"}
 };
