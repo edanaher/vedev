@@ -73,6 +73,8 @@ struct { int k; char *sym; } keymapping[] =  {
   { KEY_W, "W"},
   { KEY_E, "E"},
   { KEY_J, "J"},
+  { KEY_UP, "UP"},
+  { KEY_DOWN, "DOWN"},
   { KEY_F6, "F6"},
   { KEY_F7, "F7"}
 };
